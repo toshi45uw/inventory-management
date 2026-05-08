@@ -19,18 +19,23 @@ export default function StockPage() {
 
   const fetchStock = useCallback(async () => {
     setLoading(true);
-    const p = new URLSearchParams();
-    if (filters.code) p.set("code", filters.code);
-    if (filters.name) p.set("name", filters.name);
-    if (filters.category) p.set("category", filters.category);
-    if (filters.status) p.set("status", filters.status);
-    if (filters.location) p.set("location", filters.location);
-    if (filters.lowStock) p.set("lowStock", "true");
-    if (filters.zeroStock) p.set("zeroStock", "true");
-    const res = await fetch(`/api/stock?${p}`);
-    const data = await res.json();
-    setMaterials(data);
-    setLoading(false);
+    try {
+      const p = new URLSearchParams();
+      if (filters.code) p.set("code", filters.code);
+      if (filters.name) p.set("name", filters.name);
+      if (filters.category) p.set("category", filters.category);
+      if (filters.status) p.set("status", filters.status);
+      if (filters.location) p.set("location", filters.location);
+      if (filters.lowStock) p.set("lowStock", "true");
+      if (filters.zeroStock) p.set("zeroStock", "true");
+      const res = await fetch(`/api/stock?${p}`);
+      const data = await res.json();
+      if (res.ok) setMaterials(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   }, [filters]);
 
   useEffect(() => { fetchStock(); }, [fetchStock]);

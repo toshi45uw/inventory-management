@@ -21,13 +21,18 @@ export default function HistoryPage() {
 
   const fetchHistory = useCallback(async () => {
     setLoading(true);
-    const p = new URLSearchParams(
-      Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
-    );
-    const res = await fetch(`/api/transactions?${p}`);
-    const data = await res.json();
-    setTransactions(data);
-    setLoading(false);
+    try {
+      const p = new URLSearchParams(
+        Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
+      );
+      const res = await fetch(`/api/transactions?${p}`);
+      const data = await res.json();
+      if (res.ok) setTransactions(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   }, [filters]);
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
