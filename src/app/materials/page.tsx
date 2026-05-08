@@ -16,13 +16,18 @@ export default function MaterialsPage() {
 
   const fetchMaterials = useCallback(async () => {
     setLoading(true);
-    const p = new URLSearchParams(
-      Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
-    );
-    const res = await fetch(`/api/materials?${p}`);
-    const data = await res.json();
-    setMaterials(data);
-    setLoading(false);
+    try {
+      const p = new URLSearchParams(
+        Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
+      );
+      const res = await fetch(`/api/materials?${p}`);
+      const data = await res.json();
+      if (res.ok) setMaterials(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   }, [filters]);
 
   useEffect(() => { fetchMaterials(); }, [fetchMaterials]);
