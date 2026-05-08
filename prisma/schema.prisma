@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// MaterialStatus: ACTIVE | TRANSITIONING | SUSPENDED | DISCONTINUED
+// TransactionType: INBOUND | OUTBOUND | ADJUSTMENT | CANCEL
+// UserRole: ADMIN | MANAGER | OPERATOR
+
+model Material {
+  id                    Int                @id @default(autoincrement())
+  materialCode          String             @unique
+  materialName          String
+  category              String             @default("")
+  specification         String             @default("")
+  unit                  String             @default("")
+  status                String             @default("ACTIVE")
+  previousMaterialCode  String?
+  successorMaterialCode String?
+  minimumStock          Int                @default(0)
+  storageLocation       String             @default("")
+  note                  String             @default("")
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  stock                 Stock?
+  transactions          StockTransaction[]
+}
+
+model Stock {
+  id              Int      @id @default(autoincrement())
+  materialId      Int      @unique
+  currentQuantity Int      @default(0)
+  updatedAt       DateTime @updatedAt
+
+  material        Material @relation(fields: [materialId], references: [id])
+}
+
+model StockTransaction {
+  id                   Int      @id @default(autoincrement())
+  transactionType      String
+  materialId           Int
+  materialCodeSnapshot String
+  materialNameSnapshot String
+  quantity             Int
+  beforeQuantity       Int
+  afterQuantity        Int
+  reason               String   @default("")
+  destinationOrSource  String   @default("")
+  note                 String   @default("")
+  operatedBy           String   @default("system")
+  operatedAt           DateTime @default(now())
+
+  material             Material @relation(fields: [materialId], references: [id])
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  role      String   @default("OPERATOR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
